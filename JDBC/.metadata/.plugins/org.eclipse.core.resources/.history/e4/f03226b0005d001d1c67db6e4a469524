@@ -1,0 +1,300 @@
+import java.awt.EventQueue;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
+import java.awt.Font;
+import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
+import javax.swing.JTextField;
+import javax.swing.JButton;
+import javax.swing.JTable;
+import javax.swing.JScrollPane;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.sql.*;
+import net.proteanit.sql.DbUtils;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+public class JavaMini {
+
+	private JFrame frame;
+	private JTextField txtbname;
+	private JTextField txtedition;
+	private JTextField txtprice;
+	private JTable table;
+	private JTextField textField;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					JavaMini window = new JavaMini();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the application.
+	 */
+	public JavaMini() {
+		initialize();
+		Connect();
+		table_load();
+	}
+	
+	Connection con;
+	PreparedStatement pst;
+	ResultSet rs;
+	
+//	"jdbc:mysql://localhost/JavaMini","root","");
+	
+	public void Connect() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://localhost:3306/JavaMini","root","Yash@SQL!OneShot#12");
+		}
+		catch(ClassNotFoundException ex) {
+			
+		}
+		catch(SQLException ex) {
+			
+		}
+	}
+	
+	public void table_load() {
+		try {
+			pst = con.prepareStatement("select * from Book");
+			rs = pst.executeQuery();
+			table.setModel(DbUtils.resultSetToTableModel(rs));
+		}
+		catch(SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frame = new JFrame();
+		frame.setBounds(100, 100, 530, 349);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+		
+		JLabel lblNewLabel = new JLabel("Book Shop");
+		lblNewLabel.setFont(new Font("Algerian", Font.BOLD, 28));
+		lblNewLabel.setBounds(180, 11, 162, 42);
+		frame.getContentPane().add(lblNewLabel);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(new TitledBorder(null, "Registration", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel.setBounds(10, 49, 247, 169);
+		frame.getContentPane().add(panel);
+		panel.setLayout(null);
+		
+		JLabel lblNewLabel_1 = new JLabel("Book Name");
+		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblNewLabel_1.setBounds(10, 24, 77, 14);
+		panel.add(lblNewLabel_1);
+		
+		JLabel lblNewLabel_1_1 = new JLabel("Edition");
+		lblNewLabel_1_1.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblNewLabel_1_1.setBounds(10, 59, 77, 14);
+		panel.add(lblNewLabel_1_1);
+		
+		JLabel lblNewLabel_1_2 = new JLabel("Price");
+		lblNewLabel_1_2.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblNewLabel_1_2.setBounds(10, 97, 77, 14);
+		panel.add(lblNewLabel_1_2);
+		
+		txtbname = new JTextField();
+		txtbname.setBounds(97, 22, 140, 20);
+		panel.add(txtbname);
+		txtbname.setColumns(10);
+		
+		txtedition = new JTextField();
+		txtedition.setColumns(10);
+		txtedition.setBounds(97, 57, 140, 20);
+		panel.add(txtedition);
+		
+		txtprice = new JTextField();
+		txtprice.setColumns(10);
+		txtprice.setBounds(97, 95, 140, 20);
+		panel.add(txtprice);
+		
+		JButton btnNewButton = new JButton("Save");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				String bname,edition,price;
+				
+				bname = txtbname.getText();
+				edition = txtedition.getText();
+				price = txtprice.getText();
+				
+				try {
+					pst = con.prepareStatement("insert into Book(book_name,edition,price)values(?,?,?)");
+					pst.setString(1,bname);
+					pst.setString(2, edition);
+					pst.setString(3, price);
+					pst.executeUpdate();
+					JOptionPane.showMessageDialog(null, "Record Added!!!");
+					table_load();
+					txtbname.setText("");
+					txtedition.setText("");
+					txtprice.setText("");
+					txtbname.requestFocus();
+				}
+				catch(SQLException el) {
+					el.printStackTrace();
+				}
+			}
+		});
+		btnNewButton.setBounds(10, 135, 57, 23);
+		panel.add(btnNewButton);
+		
+		JButton btnNewButton_1 = new JButton("Exit");
+		btnNewButton_1.setBounds(180, 135, 57, 23);
+		panel.add(btnNewButton_1);
+		
+		JButton btnClear = new JButton("Clear");
+		btnClear.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				try {
+					txtbname.setText("");
+					txtedition.setText("");
+					txtprice.setText("");
+					txtbname.requestFocus();
+				}
+				catch(Exception el) {
+					el.printStackTrace();
+				}
+				
+			}
+		});
+		btnClear.setBounds(97, 135, 57, 23);
+		panel.add(btnClear);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(267, 54, 236, 177);
+		frame.getContentPane().add(scrollPane);
+		
+		table = new JTable();
+		scrollPane.setViewportView(table);
+		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBorder(new TitledBorder(null, "Search", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_1.setBounds(10, 229, 247, 56);
+		frame.getContentPane().add(panel_1);
+		panel_1.setLayout(null);
+		
+		JLabel lblNewLabel_1_1_1 = new JLabel("Book ID");
+		lblNewLabel_1_1_1.setBounds(10, 23, 66, 15);
+		lblNewLabel_1_1_1.setFont(new Font("Tahoma", Font.BOLD, 12));
+		panel_1.add(lblNewLabel_1_1_1);
+		
+		textField = new JTextField();
+		textField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				try {
+					String id = textField.getText();
+					
+					pst = con.prepareStatement("select book_name,edition,price from Book where id=?");
+					pst.setString(1, id);
+					ResultSet rs = pst.executeQuery();
+					
+					if(rs.next() == true) {
+						String name = rs.getString(1);
+						String edition = rs.getString(2);
+						String price = rs.getString(3);
+						
+						txtbname.setText(name);
+						txtedition.setText(edition);
+						txtprice.setText(price);
+					}
+					else {
+						txtbname.setText("");
+						txtedition.setText("");
+						txtprice.setText("");
+					}
+				}
+				catch(SQLException el) {
+					el.printStackTrace();
+				}
+			}
+		});
+		textField.setBounds(99, 21, 138, 20);
+		textField.setColumns(10);
+		panel_1.add(textField);
+		
+		JButton btnNewButton_2 = new JButton("Update");
+		btnNewButton_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				String bname,edition,price,bid;
+				
+				bname = txtbname.getText();
+				edition = txtedition.getText();
+				price = txtprice.getText();
+				bid = textField.getText();
+				
+				try {
+					pst = con.prepareStatement("update Book set book_name=?,edition=?,price=? where id=?");
+					pst.setString(1,bname);
+					pst.setString(2, edition);
+					pst.setString(3, price);
+					pst.setString(4, bid);
+					pst.executeUpdate();
+					JOptionPane.showMessageDialog(null, "Record Updated!!!");
+					table_load();
+					txtbname.setText("");
+					txtedition.setText("");
+					txtprice.setText("");
+					txtbname.requestFocus();
+				}
+				catch(SQLException el) {
+					el.printStackTrace();
+				}
+			}
+		});
+		btnNewButton_2.setBounds(285, 243, 77, 42);
+		frame.getContentPane().add(btnNewButton_2);
+		
+		JButton btnNewButton_3 = new JButton("Delete");
+		btnNewButton_3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				String bid;
+				bid = textField.getText();
+				
+				try {
+					pst = con.prepareStatement("delete from Book where id=?");
+					pst.setString(1, bid);
+					pst.executeUpdate();
+					JOptionPane.showMessageDialog(null, "Record Deleted!!!");
+					table_load();
+					txtbname.setText("");
+					txtedition.setText("");
+					txtprice.setText("");
+					txtbname.requestFocus();
+				}
+				catch(SQLException el) {
+					el.printStackTrace();
+				}
+				
+			}
+		});
+		btnNewButton_3.setBounds(397, 243, 77, 42);
+		frame.getContentPane().add(btnNewButton_3);
+	}
+}
